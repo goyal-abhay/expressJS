@@ -1,32 +1,41 @@
+require("dotenv").config();
 const express = require("express");
-const port = 8000;
+const port = process.env.app_PORT || 8000;
 const bodyParser = require("body-parser");
 const yup = require("yup");
 const { PrismaClient } = require("@prisma/client");
-const res = require("express/lib/response");
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: `postgresql://${process.env.dev_user}:${process.env.dev_password}@${process.env.dev_host}:${process.env.dev_port}/${process.env.dev_database}`,
+    },
+  },
+});
+
+errorHandler = (err, req, res, next) => {
+  res.status(500).json({ error: "Something Went Wrong" });
+};
 
 const app = express();
 app.use(bodyParser.json());
 
 const todoCheck = yup.object().shape({
-  id: yup.number(),
-  title: yup.string(),
-  isCompleted: yup.boolean(),
+  id: yup.number().required(),
+  title: yup.string().required(),
+  isCompleted: yup.boolean().required(),
 });
 
-app.get("/todos", async (req, res) => {
+app.get("/todos", async (req, res, next) => {
   try {
     const rows = await prisma.todos.findMany();
     res.json(rows);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Something Went Wrong" });
+    next(err);
   }
 });
 
-app.get("/todos/:id", async (req, res) => {
+app.get("/todos/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
     const checkID = await prisma.todos.findUnique({
@@ -46,12 +55,11 @@ app.get("/todos/:id", async (req, res) => {
     });
     res.json(rowData);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Something Went Strong" });
+    next(err);
   }
 });
 
-app.post("/todos", async (req, res) => {
+app.post("/todos", async (req, res, next) => {
   try {
     await todoCheck.validate(req.body);
   } catch (err) {
@@ -70,12 +78,11 @@ app.post("/todos", async (req, res) => {
     });
     res.status(201).json(newRow);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Something Went Wrong" });
+    next(err);
   }
 });
 
-app.put("/todos/:id", async (req, res) => {
+app.put("/todos/:id", async (req, res, next) => {
   try {
     await todoCheck.validate(req.body);
   } catch (err) {
@@ -106,12 +113,11 @@ app.put("/todos/:id", async (req, res) => {
     });
     res.status(200).json(updatedRow);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Something Went Wrong" });
+    next(err);
   }
 });
 
-app.delete("/todos/:id", async (req, res) => {
+app.delete("/todos/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
     const checkID = await prisma.todos.findUnique({
@@ -132,8 +138,7 @@ app.delete("/todos/:id", async (req, res) => {
 
     return res.status(200).json({ message: "success" });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Sommething Went Wrong" });
+    next(err);
   }
 });
 
