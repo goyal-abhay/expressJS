@@ -8,7 +8,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: `postgresql://${process.env.dev_user}:${process.env.dev_password}@${process.env.dev_host}:${process.env.dev_port}/${process.env.dev_database}`,
+      url: `postgresql://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}:${process.env.DATABASE_PORT}/${process.env.DATABASE_NAME}`,
     },
   },
 });
@@ -37,15 +37,10 @@ app.get("/todos", async (req, res, next) => {
 
 app.get("/todos/:id", async (req, res, next) => {
   const { id } = req.params;
-  try {
-    const checkID = await prisma.todos.findUnique({
-      where: {
-        id: Number(id),
-      },
-    });
 
-    if (!checkID) {
-      return res.status(404).json({ message: "not found" });
+  try {
+    if (typeof Number(id) !== "number") {
+      return res.send(500);
     }
 
     const rowData = await prisma.todos.findMany({
@@ -53,7 +48,9 @@ app.get("/todos/:id", async (req, res, next) => {
         id: Number(id),
       },
     });
-    res.json(rowData);
+    if (rowData.length === 0)
+      return res.send(404);
+    res.json(rowData[0]);
   } catch (err) {
     next(err);
   }
@@ -93,13 +90,8 @@ app.put("/todos/:id", async (req, res, next) => {
   const { title, isCompleted } = req.body;
 
   try {
-    const checkID = await prisma.todos.findUnique({
-      where: {
-        id: Number(id),
-      },
-    });
-    if (!checkID) {
-      return res.status(400).json({ message: "not found" });
+    if (typeof Number(id) !== "number") {
+      return res.send(404);
     }
 
     const updatedRow = await prisma.todos.update({
@@ -120,14 +112,8 @@ app.put("/todos/:id", async (req, res, next) => {
 app.delete("/todos/:id", async (req, res, next) => {
   const { id } = req.params;
   try {
-    const checkID = await prisma.todos.findUnique({
-      where: {
-        id: Number(id),
-      },
-    });
-
-    if (!checkID) {
-      return res.status(404).json({ message: "not found" });
+    if (typeof Number(id) !== "number") {
+      return res.send(404);
     }
 
     await prisma.todos.delete({

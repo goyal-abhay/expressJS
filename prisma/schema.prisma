@@ -7,65 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
-model worldcupmatches {
-  year              Int?
-  datetime          String? @db.VarChar(255)
-  stage             String? @db.VarChar(255)
-  stadium           String? @db.VarChar(255)
-  city              String? @db.VarChar(255)
-  hometeamname      String? @db.VarChar(255)
-  hometeamgoals     Int?
-  awayteamgoals     Int?
-  awayteamname      String? @db.VarChar(255)
-  winconditions     String? @db.VarChar(255)
-  attendance        Int?
-  halftimehomegoals Int?
-  halftimeawaygoals Int?
-  referee           String? @db.VarChar(255)
-  assistant1        String? @db.VarChar(255)
-  assistant2        String? @db.VarChar(255)
-  roundid           Int?
-  matchid           Int?
-  hometeaminitials  String? @db.VarChar(3)
-  awayteaminitials  String? @db.VarChar(3)
-
-  @@ignore
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
-model worldcupplayers {
-  roundid      Int?
-  matchid      Int?
-  teaminitials String? @db.VarChar(3)
-  coachname    String? @db.VarChar(255)
-  lineup       String? @db.VarChar(1)
-  shirtnumber  Int?
-  playername   String? @db.VarChar(255)
-  position     String? @db.VarChar(10)
-  event        String? @db.VarChar(100)
-
-  @@ignore
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
-model worldcups {
-  year           Int?
-  country        String? @db.VarChar(255)
-  winner         String? @db.VarChar(255)
-  runnersup      String? @db.VarChar(255)
-  third          String? @db.VarChar(255)
-  fourth         String? @db.VarChar(255)
-  goalsscored    Int?
-  qualifiedteams Int?
-  mathchesplayed Int?
-  attendance     String? @db.VarChar(225)
-
-  @@ignore
-}
-
 model todos {
-  id          Int      @id
-  title       String?  @db.VarChar(500)
-  isCompleted Boolean?
+  id          Decimal @id @db.Decimal
+  title       String  @db.VarChar
+  isCompleted Boolean
 }
